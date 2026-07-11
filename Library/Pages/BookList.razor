@@ -34,14 +34,19 @@
                         </span>
                     </div>
 
+                    <div class="card-icon-wrapper">
+                        <div class="book-icon-circle">📖</div>
+                    </div>
+
                     <div class="card-body-content">
-                        <h3 class="card-title">📖 @book.Title</h3>
-                        <p class="card-author">By <b>@book.Author</b></p>
+                        <h3 class="card-title">@book.Title</h3>
+                        <p class="card-author">By <span class="author-name">@book.Author</span></p>
 
                         @if (!book.IsAvailable && !string.IsNullOrEmpty(book.BorrowedByMemberId))
                         {
-                            <div class="borrower-info">
-                                👤 Borrower ID: <span>@book.BorrowedByMemberId</span>
+                            <div class="borrower-info-box">
+                                <span class="borrower-label">👤 Borrowed By</span>
+                                <span class="borrower-id">ID: @book.BorrowedByMemberId</span>
                             </div>
                         }
                     </div>
@@ -51,13 +56,13 @@
                             @if (book.IsAvailable)
                             {
                                 <button class="btn-card-action btn-borrow-card" @onclick="() => ToggleBookStatus(book.Id)">
-                                    📥 Borrow
+                                    📥 Borrow Book
                                 </button>
                             }
                             else
                             {
                                 <button class="btn-card-action btn-return-card" @onclick="() => ToggleBookStatus(book.Id)">
-                                    ↩️ Return
+                                    ↩️ Return Book
                                 </button>
                             }
                         </div>
@@ -71,7 +76,6 @@
             }
         </div>
     }
-
 
     @if (isModelOpen)
     {
@@ -103,16 +107,6 @@
                     </select>
                 </div>
 
-                <div class="input-group">
-                    <label>ISBN</label>
-                    <input type="text" placeholder="Enter ISBN" @bind-value="newBook.ISBN" />
-                </div>
-
-                <div class="input-group">
-                    <label>Publish Year</label>
-                    <input type="text" placeholder="Enter Publish Year" @bind-value="newBook.PublishYear" />
-                </div>
-
                 <div class="modal-actions">
                     <button class="btn-add" @onclick="SaveBook">Save</button>
                     <button class="btn-cancel" @onclick="Cancel">Cancel</button>
@@ -130,11 +124,11 @@
 
     public static List<BookLocal> Books { get; set; } = new List<BookLocal>
     {
-        new BookLocal {Id = 1, Title = "C# Basic Fundamentals", Author = "John Doe", CategoryName = "Technology", ISBN = "111-222", PublishYear = "2024", IsAvailable = true},
-        new BookLocal {Id = 2, Title = "Blazor Guide for Beginners", Author = "Jane Smith", CategoryName = "Technology", ISBN = "111-333", PublishYear = "2025", IsAvailable = false, BorrowedByMemberId = "STU-1002"},
-        new BookLocal {Id = 3, Title = "Mastering ASP.NET Core", Author = "Robert Martin", CategoryName = "Technology", ISBN = "111-444", PublishYear = "2023", IsAvailable = true},
-        new BookLocal {Id = 4, Title = "Clean Code Practices", Author = "Uncle Bob", CategoryName = "History", ISBN = "111-555", PublishYear = "2022", IsAvailable = true},
-        new BookLocal {Id = 5, Title = "JavaScript Language Power", Author = "David Flanagan", CategoryName = "LoveStory", ISBN = "111-666", PublishYear = "2024", IsAvailable = false, BorrowedByMemberId = "STU-1005"}
+        new BookLocal {Id = 1, Title = "C# Basic Fundamentals", Author = "John Doe", CategoryName = "Technology", IsAvailable = true},
+        new BookLocal {Id = 2, Title = "Blazor Guide for Beginners", Author = "Jane Smith", CategoryName = "Technology", IsAvailable = false, BorrowedByMemberId = "STU-1002"},
+        new BookLocal {Id = 3, Title = "Mastering ASP.NET Core", Author = "Robert Martin", CategoryName = "Technology", IsAvailable = true},
+        new BookLocal {Id = 4, Title = "Clean Code Practices", Author = "Uncle Bob", CategoryName = "History", IsAvailable = true},
+        new BookLocal {Id = 5, Title = "JavaScript Language Power", Author = "David Flanagan", CategoryName = "LoveStory", IsAvailable = false, BorrowedByMemberId = "STU-1005"}
     };
 
     private List<BookLocal> FilteredBooks
@@ -163,8 +157,6 @@
             Title = book.Title,
             Author = book.Author,
             CategoryName = book.CategoryName,
-            ISBN = book.ISBN,
-            PublishYear = book.PublishYear,
             IsAvailable = book.IsAvailable,
             BorrowedByMemberId = book.BorrowedByMemberId,
             BorrowedDate = book.BorrowedDate
@@ -196,8 +188,6 @@
                 existing.Title = newBook.Title;
                 existing.Author = newBook.Author;
                 existing.CategoryName = newBook.CategoryName;
-                existing.ISBN = newBook.ISBN;
-                existing.PublishYear = newBook.PublishYear;
 
                 Toast.ShowSuccess($"စာအုပ်အချက်အလက်များ ပြင်ဆင်ပြီးပါပြီ။", "Update Success");
             }
@@ -262,7 +252,6 @@
 
     private async Task DeleteBook(int id)
     {
-        // 🎯 ဘာမှထပ်မံမချိတ်ဆက်ရသေးခင်အဆင့်တွင် စိတ်ချရသော Browser Confirm ကို သုံးထားခြင်း
         bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "ဒီစာအုပ်ကို စနစ်ထဲမှ ဖျက်ပစ်ရန် သေချာပါသလား?");
         if (confirmed)
         {
@@ -275,14 +264,13 @@
         }
     }
 
+    // 🎯 Model Class ထဲမှ ISBN နှင့် PublishYear ကို ဖြုတ်လိုက်ခြင်း
     public class BookLocal
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Author { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
-        public string ISBN { get; set; } = string.Empty;
-        public string PublishYear { get; set; } = string.Empty;
         public bool IsAvailable { get; set; } = true;
         public string? BorrowedByMemberId { get; set; }
         public DateTime? BorrowedDate { get; set; }
