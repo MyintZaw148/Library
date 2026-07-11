@@ -31,11 +31,11 @@ jobs:
       - name: Publish Blazor WASM
         run: dotnet publish Library/Library.csproj -c Release -o release --nologo
 
+      - name: List publish output (debug)
+        run: ls -la release/wwwroot/
+
       - name: Fix permissions
         run: chmod -R 755 release/wwwroot
-
-      - name: Add .nojekyll file
-        run: touch release/wwwroot/.nojekyll
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
@@ -44,3 +44,4 @@ jobs:
           publish_dir: release/wwwroot
           publish_branch: gh-pages
           force_orphan: true
+          enable_jekyll: false
