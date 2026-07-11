@@ -1,0 +1,324 @@
+﻿@page "/books"
+@inject NavigationManager Navigation
+@inject ToastService Toast
+@inject IJSRuntime JSRuntime
+
+<div class="book-container">
+    <div class="book-header">
+        <h2>Library Book List</h2>
+
+        <div class="header-actions">
+            <input class="search" type="text" placeholder="Search By Title or Author..." @bind-value="searchText" @bind-value:event="oninput" />
+            <button class="btn-new-book" @onclick="OpenAddModal">New Book</button>
+        </div>
+    </div>
+
+    @if (FilteredBooks == null || !FilteredBooks.Any())
+    {
+        <div class="alert-warning" style="padding: 20px; background-color: #fff3cd; color: #856404; border-radius: 5px; text-align: center; margin-top: 20px;">
+            စာအုပ်မရှိသေးပါ။
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Category</th>
+                        <th>ISBN</th>
+                        <th>Year</th>
+                        <th>Status</th>
+                        <th>Quick Action</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var book in FilteredBooks)
+                    {
+                        <tr>
+                            <td>@book.Id</td>
+                            <td class="book-title">@book.Title</td>
+                            <td>@book.Author</td>
+                            <td>
+                                <span style="background: #edf2f7; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: 500;">
+                                    @(string.IsNullOrEmpty(book.CategoryName) ? "Uncategorized" : book.CategoryName)
+                                </span>
+                            </td>
+                            <td>@book.ISBN</td>
+                            <td>@book.PublishYear</td>
+                            <td>
+                                <span class="badge @(book.IsAvailable ? "badge-available" : "badge-borrowed")">
+                                    @(book.IsAvailable ? "Available" : "Borrowed")
+                                </span>
+
+                                @if (!book.IsAvailable && !string.IsNullOrEmpty(book.BorrowedByMemberId))
+                                {
+                                    <div style="font-size: 0.75rem; color: #dc3545; margin-top: 4px; font-weight: 500;">
+                                        ID: @book.BorrowedByMemberId
+                                    </div>
+                                }
+                            </td>
+
+                            <td>
+                                @if (book.IsAvailable)
+                                {
+                                    <button class="btn-borrow" @onclick="() => ToggleBookStatus(book.Id)">Borrow</button>
+                                }
+                                else
+                                {
+                                    <button class="btn-return" @onclick="() => ToggleBookStatus(book.Id)">Return</button>
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                <div class="action-buttons">
+                                    <button class="btn-edit" @onclick="() => OpenEditModal(book)">Edit</button>
+                                    <button class="btn-delete" @onclick="() => DeleteBook(book.Id)">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (isModelOpen)
+    {
+        <div class="modal-backdrop">
+            <div class="bookAdd-container">
+                <div class="book-header">
+                    <h3>@(isEditModel ? "Edit Book" : "Add New Book")</h3>
+                    <hr />
+                </div>
+
+                <div class="input-group">
+                    <label>Title</label>
+                    <input type="text" placeholder="Enter Title" @bind-value="newBook.Title" />
+                </div>
+
+                <div class="input-group">
+                    <label>Author</label>
+                    <input type="text" placeholder="Enter Author" @bind-value="newBook.Author" />
+                </div>
+
+                <div class="input-group">
+                    <label>Category</label>
+                    <select @bind="newBook.CategoryName" style="width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.95rem; background-color: white;">
+                        <option value="">-- Select Category --</option>
+                        @foreach (var cat in CategoryStorage.Categories)
+                        {
+                            <option value="@cat.CatName">@cat.CatName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>ISBN</label>
+                    <input type="text" placeholder="Enter ISBN" @bind-value="newBook.ISBN" />
+                </div>
+
+                <div class="input-group">
+                    <label>Publish Year</label>
+                    <input type="text" placeholder="Enter Publish Year" @bind-value="newBook.PublishYear" />
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-add" @onclick="SaveBook">Save</button>
+                    <button class="btn-cancel" @onclick="Cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool isModelOpen = false;
+    private bool isEditModel = false;
+    private string searchText = string.Empty;
+    private BookLocal newBook = new BookLocal();
+
+    public static List<BookLocal> Books { get; set; } = new List<BookLocal>
+    {
+        new BookLocal {Id = 1, Title = "C# Basic Fundamentals", Author = "John Doe", CategoryName = "Technology", ISBN = "111-222", PublishYear = "2024", IsAvailable = true},
+        new BookLocal {Id = 2, Title = "Blazor Guide for Beginners", Author = "Jane Smith", CategoryName = "Technology", ISBN = "111-333", PublishYear = "2025", IsAvailable = false, BorrowedByMemberId = "STU-1002"},
+        new BookLocal {Id = 3, Title = "Mastering ASP.NET Core", Author = "Robert Martin", CategoryName = "Technology", ISBN = "111-444", PublishYear = "2023", IsAvailable = true},
+        new BookLocal {Id = 4, Title = "Clean Code Practices", Author = "Uncle Bob", CategoryName = "History", ISBN = "111-555", PublishYear = "2022", IsAvailable = true},
+        new BookLocal {Id = 5, Title = "JavaScript Language Power", Author = "David Flanagan", CategoryName = "LoveStory", ISBN = "111-666", PublishYear = "2024", IsAvailable = false, BorrowedByMemberId = "STU-1005"}
+    };
+
+    private List<BookLocal> FilteredBooks
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(searchText)) return Books;
+            return Books.Where(b => b.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    b.Author.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+    }
+
+    private void OpenAddModal()
+    {
+        isEditModel = false;
+        newBook = new BookLocal();
+        isModelOpen = true;
+    }
+
+    private void OpenEditModal(BookLocal book)
+    {
+        isEditModel = true;
+        newBook = new BookLocal
+        {
+            Id = book.Id,
+            Title = book.Title,
+            Author = book.Author,
+            CategoryName = book.CategoryName,
+            ISBN = book.ISBN,
+            PublishYear = book.PublishYear,
+            IsAvailable = book.IsAvailable,
+            BorrowedByMemberId = book.BorrowedByMemberId,
+            BorrowedDate = book.BorrowedDate
+        };
+        isModelOpen = true;
+    }
+
+    private async Task SaveBook()
+    {
+        if (string.IsNullOrWhiteSpace(newBook.Title) || string.IsNullOrWhiteSpace(newBook.Author))
+        {
+            Toast.ShowWarning("စာအုပ်ခေါင်းစဉ်နှင့် စာရေးသူကို ဖြည့်စွက်ပေးပါ။", "Validation Required");
+            return;
+        }
+
+        if (!isEditModel)
+        {
+            int nextId = Books.Any() ? Books.Max(b => b.Id) + 1 : 1;
+            newBook.Id = nextId;
+            newBook.IsAvailable = true;
+            Books.Add(newBook);
+            Toast.ShowSuccess($"'{newBook.Title}' ကို အောင်မြင်စွာ ထည့်သွင်းပြီးပါပြီ။", "Book Added");
+        }
+        else
+        {
+            var existing = Books.FirstOrDefault(b => b.Id == newBook.Id);
+            if (existing != null)
+            {
+                existing.Title = newBook.Title;
+                existing.Author = newBook.Author;
+                existing.CategoryName = newBook.CategoryName;
+                existing.ISBN = newBook.ISBN;
+                existing.PublishYear = newBook.PublishYear;
+
+                Toast.ShowSuccess($"စာအုပ်အချက်အလက်များ ပြင်ဆင်ပြီးပါပြီ။", "Update Success");
+            }
+        }
+
+        isModelOpen = false;
+    }
+
+    private void Cancel() => isModelOpen = false;
+
+    private async Task ToggleBookStatus(int id)
+    {
+        var book = Books.FirstOrDefault(b => b.Id == id);
+        if (book != null)
+        {
+            if (book.IsAvailable)
+            {
+                string memberId = await JSRuntime.InvokeAsync<string>("prompt", "စာအုပ်ငှားမည့် ကျောင်းသား ID ကို ရိုက်ထည့်ပါ:");
+                if (string.IsNullOrWhiteSpace(memberId)) return;
+
+                var existingMember = MemberStorage.Members.FirstOrDefault(m => m.MemberId.Equals(memberId, StringComparison.OrdinalIgnoreCase));
+
+                if (existingMember == null)
+                {
+                    Toast.ShowError($"ခွင့်မပြုပါ: ကျောင်းသား ID ({memberId}) သည် အသင်းဝင်စာရင်းထဲတွင် မရှိပါ။ အရင်ဆုံး Member List မှာ သွားဆောက်ပါ။", "Access Denied");
+                    return;
+                }
+
+                book.IsAvailable = false;
+                book.BorrowedByMemberId = existingMember.MemberId;
+                book.BorrowedDate = DateTime.Now;
+
+                int nextTxId = TransactionStorage.Transactions.Any() ? TransactionStorage.Transactions.Max(t => t.Id) + 1 : 1;
+                TransactionStorage.Transactions.Add(new BookHistory.TransactionLocal
+                {
+                    Id = nextTxId,
+                    BookTitle = book.Title,
+                    MemberId = existingMember.MemberId,
+                    BorrowDate = DateTime.Now,
+                    IsReturned = false
+                });
+
+                Toast.ShowSuccess($"{existingMember.FullName} ဆီသို့ စာအုပ်ထုတ်ပေးလိုက်ပါပြီ။", "Borrow Success");
+            }
+            else
+            {
+                book.IsAvailable = true;
+                book.BorrowedByMemberId = null;
+                book.BorrowedDate = null;
+
+                var activeTx = TransactionStorage.Transactions.FirstOrDefault(t => t.BookTitle == book.Title && !t.IsReturned);
+                if (activeTx != null)
+                {
+                    activeTx.ReturnDate = DateTime.Now;
+                    activeTx.IsReturned = true;
+                }
+
+                Toast.ShowSuccess("စာအုပ် ပြန်အပ်နှံခြင်း အောင်မြင်ပါသည်။", "Return Success");
+            }
+        }
+    }
+
+    private async Task DeleteBook(int id)
+    {
+        // 🎯 ဘာမှထပ်မံမချိတ်ဆက်ရသေးခင်အဆင့်တွင် စိတ်ချရသော Browser Confirm ကို သုံးထားခြင်း
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "ဒီစာအုပ်ကို စနစ်ထဲမှ ဖျက်ပစ်ရန် သေချာပါသလား?");
+        if (confirmed)
+        {
+            var book = Books.FirstOrDefault(b => b.Id == id);
+            if (book != null)
+            {
+                Books.Remove(book);
+                Toast.ShowError($"'{book.Title}' ကို စနစ်ထဲမှ ဖျက်သိမ်းလိုက်ပါပြီ။", "Book Deleted");
+            }
+        }
+    }
+
+    public class BookLocal
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Author { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
+        public string ISBN { get; set; } = string.Empty;
+        public string PublishYear { get; set; } = string.Empty;
+        public bool IsAvailable { get; set; } = true;
+        public string? BorrowedByMemberId { get; set; }
+        public DateTime? BorrowedDate { get; set; }
+    }
+
+    public static class MemberStorage
+    {
+        public static List<MemberList.MemberLocal> Members { get; set; } = new List<MemberList.MemberLocal>
+        {
+            new MemberList.MemberLocal { MemberId = "STU-1001", FullName = "Aung Aung", Email = "aungaung@gmail.com", Phone = "091234567" },
+            new MemberList.MemberLocal { MemberId = "STU-1002", FullName = "Jane Smith", Email = "janesmith@gmail.com", Phone = "097778889" },
+            new MemberList.MemberLocal { MemberId = "STU-1005", FullName = "David Flanagan", Email = "david@gmail.com", Phone = "094445556" }
+        };
+    }
+
+    public static class CategoryStorage
+    {
+        public static List<BookCategory.CategoryLocal> Categories => BookCategory.CategoryList;
+    }
+
+    public static class TransactionStorage
+    {
+        public static List<BookHistory.TransactionLocal> Transactions { get; set; } = new List<BookHistory.TransactionLocal>();
+    }
+}

@@ -1,0 +1,243 @@
+﻿@page "/history"
+@inject IJSRuntime JSRuntime
+
+<div class="history-container">
+    <div class="history-header">
+        <h2>Borrow and Return Transaction History</h2>
+    </div>
+
+    @if (Transactions == null || !Transactions.Any())
+    {
+        <div class="history-empty">ငှားရမ်းမှု မှတ်တမ်း မရှိသေးပါ။</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Trans ID</th>
+                        <th>Book Title</th>
+                        <th>Member ID</th>
+                        <th>Borrow Date</th>
+                        <th>Return Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var trans in Transactions)
+                    {
+                        <tr>
+                            <td data-label="Trans ID"><b>Tx-@trans.Id</b></td>
+                            <td data-label="Book Title" class="book-title-cell">📖 @trans.BookTitle</td>
+                            <td data-label="Member ID">@trans.MemberId</td>
+                            <td data-label="Borrow Date" class="date-cell">@trans.BorrowDate.ToString("yyyy-MM-dd hh:mm tt")</td>
+                            <td data-label="Return Date" class="date-cell">@(trans.ReturnDate.HasValue ? trans.ReturnDate.Value.ToString("yyyy-MM-dd hh:mm tt") : "-")</td>
+                            <td data-label="Status">
+                                <span class="status-badge @(trans.IsReturned ? "status-returned" : "status-borrowing")">
+                                    @(trans.IsReturned ? "Returned" : "Borrowing")
+                                </span>
+                            </td>
+                            <td data-label="Actions">
+                                @if (!trans.IsReturned)
+                                {
+                                    <div class="action-buttons">
+                                        <button class="btn-exchange" @onclick="() => OpenExchangeModal(trans)">
+                                            🔄 Change Book
+                                        </button>
+                                        <button class="btn-return" @onclick="() => ReturnBook(trans.Id)">
+                                            ↩ Return
+                                        </button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="txt-completed">✅ Completed</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@if (isExchangeModalOpen && editingTransaction != null)
+{
+    <div class="modal-backdrop">
+        <div class="modal-box">
+            <h3>🔄 Change Borrowed Book</h3>
+            <p class="modal-subtitle">Member <b>@editingTransaction.MemberId</b> အတွက် စာအုပ်လဲလှယ်ပေးခြင်း</p>
+            <hr />
+
+            <div class="form-group">
+                <label>လက်ရှိငှားထားသောစာအုပ်:</label>
+                <input type="text" value="@oldBookTitle" disabled class="form-control input-disabled" />
+            </div>
+
+            <div class="form-group" style="position: relative;">
+                <label>ပြောင်းလဲမည့် စာအုပ်အမည်အသစ် (Live Search):</label>
+                <input type="text"
+                       value="@newBookTitle"
+                       @oninput="LiveSearchBook"
+                       placeholder="Type book title..."
+                       class="form-control" />
+
+                @if (SuggestedBooks != null && SuggestedBooks.Any())
+                {
+                    <ul class="suggestion-list">
+                        @foreach (var bookTitle in SuggestedBooks)
+                        {
+                            <li @onclick="() => SelectBookSuggestion(bookTitle)">
+                                📖 @bookTitle
+                            </li>
+                        }
+                    </ul>
+                }
+
+                @if (showError)
+                {
+                    <span class="text-danger">⚠️ ကျေးဇူးပြု၍ စာအုပ်အမည်အသစ် ရိုက်ထည့်ပေးပါ။</span>
+                }
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-action btn-save" @onclick="ConfirmExchange">
+                    💾 Confirm Change
+                </button>
+                <button type="button" class="btn-action btn-cancel" @onclick="CloseExchangeModal">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code
+{
+    // 🎯 ပြင်ဆင်ချက် ၁ - BookList ဖိုင်ထဲက TransactionStorage ဒေတာစာရင်းဆီသို့ မှန်ကန်စွာ ညွှန်းဆိုခြင်း
+    private List<TransactionLocal> Transactions => BookList.TransactionStorage.Transactions;
+
+    private bool isExchangeModalOpen = false;
+    private TransactionLocal editingTransaction = null;
+    private string oldBookTitle = string.Empty;
+    private string newBookTitle = string.Empty;
+    private bool showError = false;
+    private List<string> SuggestedBooks { get; set; } = new List<string>();
+
+    // 🎯 ပြင်ဆင်ချက် ၂ - BookList.Books (စာအုပ်စာရင်းအစစ်) ထဲက ဒေတာများကို Live Search တိုက်စစ်ခြင်း
+    private void LiveSearchBook(ChangeEventArgs e)
+    {
+        newBookTitle = e.Value?.ToString() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(newBookTitle))
+        {
+            SuggestedBooks.Clear();
+            return;
+        }
+
+        SuggestedBooks = BookList.Books
+            .Where(b => b.Title.Contains(newBookTitle, StringComparison.OrdinalIgnoreCase))
+            .Select(b => b.Title)
+            .Distinct()
+            .Take(5)
+            .ToList();
+    }
+
+    private void OpenExchangeModal(TransactionLocal trans)
+    {
+        editingTransaction = trans;
+        oldBookTitle = trans.BookTitle;
+        newBookTitle = string.Empty;
+        showError = false;
+        SuggestedBooks.Clear();
+        isExchangeModalOpen = true;
+    }
+
+    private void CloseExchangeModal() => isExchangeModalOpen = false;
+
+    private void SelectBookSuggestion(string bookTitle)
+    {
+        newBookTitle = bookTitle;
+        SuggestedBooks.Clear();
+    }
+
+    // 🎯 ပြင်ဆင်ချက် ၃ - စာအုပ်လဲလှယ်မှုအတွက် ဒေတာရင်းမြစ်နှစ်ဖက်စလုံးကို (Sync) အပ်ဒိတ်လုပ်ပေးခြင်း
+    private async Task ConfirmExchange()
+    {
+        if (string.IsNullOrWhiteSpace(newBookTitle))
+        {
+            showError = true;
+            return;
+        }
+
+        if (editingTransaction != null)
+        {
+            // ၁။ History ဒေတာရင်းမြစ်ထဲက သက်ဆိုင်ရာ စာရင်းကို အရင်ရှာမယ်
+            var trans = BookList.TransactionStorage.Transactions.FirstOrDefault(t => t.Id == editingTransaction.Id);
+            if (trans != null)
+            {
+                // ၂။ BookList စာမျက်နှာပေါ်က အရင်ငှားထားတဲ့ စာအုပ်ဟောင်းကို Available (ပြန်ငှားလို့ရအောင်) လုပ်ပေးမယ်
+                var oldBook = BookList.Books.FirstOrDefault(b => b.Title.Equals(oldBookTitle, StringComparison.OrdinalIgnoreCase));
+                if (oldBook != null)
+                {
+                    oldBook.IsAvailable = true;
+                    oldBook.BorrowedByMemberId = null;
+                    oldBook.BorrowedDate = null;
+                }
+
+                // ၃။ BookList စာမျက်နှာပေါ်က အသစ်လဲလှယ်လိုက်တဲ့ စာအုပ်ကို Borrowed (ငှားပြီးသား) အဖြစ် ပြောင်းလဲပေးမယ်
+                var newBookInList = BookList.Books.FirstOrDefault(b => b.Title.Equals(newBookTitle.Trim(), StringComparison.OrdinalIgnoreCase));
+                if (newBookInList != null)
+                {
+                    newBookInList.IsAvailable = false;
+                    newBookInList.BorrowedByMemberId = trans.MemberId;
+                    newBookInList.BorrowedDate = DateTime.Now;
+                }
+
+                // ၄။ History row ထဲက စာအုပ်အမည်ကို အသစ်ပြင်ဆင်သိမ်းဆည်းလိုက်ခြင်း
+                trans.BookTitle = newBookTitle.Trim();
+
+                isExchangeModalOpen = false;
+                await JSRuntime.InvokeVoidAsync("alert", $"🎉 စာအုပ်ကို '{oldBookTitle}' မှ '{trans.BookTitle}' သို့ အောင်မြင်စွာ လဲလှယ်ပေးပြီးပါပြီ။");
+            }
+        }
+    }
+
+    // 🎯 ပြင်ဆင်ချက် ၄ - စာအုပ်ပြန်အပ်ရင်လည်း BookList ထဲက အခြေအနေကိုပါ Available အော်တိုလိုက်ပြောင်းပေးခြင်း
+    private async Task ReturnBook(int transactionId)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "ဒီစာအုပ်ကို ပြန်အပ်နှံမှာ သေချာပါသလား?");
+        if (confirmed)
+        {
+            var trans = BookList.TransactionStorage.Transactions.FirstOrDefault(t => t.Id == transactionId);
+            if (trans != null)
+            {
+                // BookList ထဲက စာအုပ်ကို Available ပြန်လုပ်ပေးခြင်း
+                var book = BookList.Books.FirstOrDefault(b => b.Title.Equals(trans.BookTitle, StringComparison.OrdinalIgnoreCase));
+                if (book != null)
+                {
+                    book.IsAvailable = true;
+                    book.BorrowedByMemberId = null;
+                    book.BorrowedDate = null;
+                }
+
+                trans.IsReturned = true;
+                trans.ReturnDate = DateTime.Now;
+                await JSRuntime.InvokeVoidAsync("alert", "🎉 စာအုပ်ပြန်အပ်နှံမှု အောင်မြင်ပါသည်။");
+            }
+        }
+    }
+
+    public class TransactionLocal
+    {
+        public int Id { get; set; }
+        public string BookTitle { get; set; } = string.Empty;
+        public string MemberId { get; set; } = string.Empty;
+        public DateTime BorrowDate { get; set; }
+        public DateTime? ReturnDate { get; set; }
+        public bool IsReturned { get; set; } = false;
+    }
+}

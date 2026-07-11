@@ -1,0 +1,230 @@
+﻿@page "/members"
+@using System.ComponentModel.DataAnnotations
+@inject ToastService Toast
+@inject IJSRuntime JSRuntime
+
+<div class="member-container">
+    <div class="member-header">
+        <h2>Library Members Management</h2>
+
+        <div class="header-actions">
+            <input class="search-box" type="text" placeholder="Search by Name or ID..." @bind-value="searchText" @bind-value:event="oninput" />
+            <button class="btn-add-member" @onclick="OpenAddModal">Add New Member</button>
+        </div>
+    </div>
+
+    @if (FilteredMembers == null || !FilteredMembers.Any())
+    {
+        <div class="alert-info">အသင်းဝင်စာရင်း မရှိသေးပါ။</div>
+    }
+    else
+    {
+        <div class="member-grid">
+            @foreach (var member in FilteredMembers)
+            {
+                <div class="member-card" @onclick="() => OpenDetailModal(member)">
+                    <div class="card-avatar">
+                        <span class="avatar-icon">👤</span>
+                    </div>
+                    <div class="card-body">
+                        <h4 class="member-name">@member.FullName</h4>
+                        <p class="member-id">ID: @member.MemberId</p>
+                        <p class="member-info">📞 @member.Phone</p>
+                    </div>
+                    <div class="card-actions" @onclick:stopPropagation="true">
+                        <button class="btn-edit" @onclick="() => EditMember(member)">Edit</button>
+                        <button class="btn-delete" @onclick="() => DeleteMember(member.MemberId)">Delete</button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@if (isDetailModalOpen && selectedMember != null)
+{
+    <div class="modal-backdrop" @onclick="CloseDetailModal">
+        <div class="modal-box detail-box" @onclick:stopPropagation="true">
+            <div class="detail-header">
+                <div class="detail-avatar">👤</div>
+                <h3>Member Details</h3>
+            </div>
+            <hr />
+            <div class="detail-body">
+                <div class="info-row"><strong>Member ID:</strong> <span>@selectedMember.MemberId</span></div>
+                <div class="info-row"><strong>Full Name:</strong> <span>@selectedMember.FullName</span></div>
+                <div class="info-row"><strong>Email:</strong> <span>@selectedMember.Email</span></div>
+                <div class="info-row"><strong>Phone:</strong> <span>@selectedMember.Phone</span></div>
+                <div class="info-row"><strong>Join Date:</strong> <span>@selectedMember.JoinDate.ToString("yyyy-MM-dd")</span></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-action btn-cancel" @onclick="CloseDetailModal">Close</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (isModalOpen)
+{
+    <div class="modal-backdrop">
+        <div class="modal-box">
+            <h3>@(isEditMode ? "Edit Member" : "Add New Member")</h3>
+            <hr />
+
+            <EditForm Model="@currentMember" OnValidSubmit="SaveMember">
+                <DataAnnotationsValidator />
+
+                <div class="form-group">
+                    <label>Member ID:</label>
+                    <input type="text" @bind-value="currentMember.MemberId" disabled="@isEditMode" placeholder="e.g., STU-1001" style="text-transform: uppercase;" />
+                    <ValidationMessage For="@(() => currentMember.MemberId)" class="text-danger" />
+                </div>
+
+                <div class="form-group">
+                    <label>Full Name:</label>
+                    <input type="text" @bind-value="currentMember.FullName" />
+                    <ValidationMessage For="@(() => currentMember.FullName)" class="text-danger" />
+                </div>
+
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" @bind-value="currentMember.Email" />
+                    <ValidationMessage For="@(() => currentMember.Email)" class="text-danger" />
+                </div>
+
+                <div class="form-group">
+                    <label>Phone:</label>
+                    <input type="text" @bind-value="currentMember.Phone" />
+                    <ValidationMessage For="@(() => currentMember.Phone)" class="text-danger" />
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-action btn-save">
+                        <span class="btn-icon">💾</span> Save
+                    </button>
+                    <button type="button" class="btn-action btn-cancel" @onclick="CloseModal">
+                        Cancel
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    private string searchText = string.Empty;
+
+    private bool isModalOpen = false;
+    private bool isEditMode = false;
+
+    private bool isDetailModalOpen = false;
+    private MemberLocal selectedMember = null;
+
+    private MemberLocal currentMember = new MemberLocal();
+
+    private List<MemberLocal> FilteredMembers
+    {
+        get
+        {
+            var globalMembers = BookList.MemberStorage.Members;
+            if (string.IsNullOrWhiteSpace(searchText)) return globalMembers;
+            return globalMembers.Where(m => m.FullName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                            m.MemberId.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+    }
+
+    private void OpenDetailModal(MemberLocal member)
+    {
+        selectedMember = member;
+        isDetailModalOpen = true;
+    }
+
+    private void CloseDetailModal() => isDetailModalOpen = false;
+
+    private void OpenAddModal()
+    {
+        isEditMode = false;
+        currentMember = new MemberLocal { JoinDate = DateTime.Now };
+        isModalOpen = true; 
+    }
+
+    private void CloseModal() => isModalOpen = false;
+
+    private async Task SaveMember()
+    {
+        if (!isEditMode)
+        {
+            // ID တူပွား ရှိ/မရှိ စစ်ဆေးခြင်း
+            if (BookList.MemberStorage.Members.Any(m => m.MemberId.Equals(currentMember.MemberId, StringComparison.OrdinalIgnoreCase)))
+            {
+                Toast.ShowError("ဒီ Member ID က ရှိပြီးသား ဖြစ်နေပါတယ်။", "Duplicate ID");
+                return;
+            }
+            BookList.MemberStorage.Members.Add(currentMember);
+            Toast.ShowSuccess($"အောင်မြင်စွာ ထည့်သွင်းပြီးပါပြီ။", "Member Added");
+        }
+        else
+        {
+            var existing = BookList.MemberStorage.Members.FirstOrDefault(m => m.MemberId == currentMember.MemberId);
+            if (existing != null)
+            {
+                existing.FullName = currentMember.FullName;
+                existing.Email = currentMember.Email;
+                existing.Phone = currentMember.Phone;
+
+                Toast.ShowSuccess($"စာအုပ်အချက်အလက်များ ပြင်ဆင်ပြီးပါပြီ။", "Update Success");
+            }
+        }
+
+        isModalOpen = false;
+    }
+
+    private void EditMember(MemberLocal member)
+    {
+        isEditMode = true;
+        currentMember = new MemberLocal
+        {
+            MemberId = member.MemberId,
+            FullName = member.FullName,
+            Email = member.Email,
+            Phone = member.Phone,
+            JoinDate = member.JoinDate
+        };
+        isModalOpen = true; 
+    }
+
+    private async Task DeleteMember(string memberId)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "ဒီအသင်းဝင်ကို ဖျက်ပစ်ရန် သေချာပါသလား?");
+        if (confirmed)
+        {
+            var member = BookList.MemberStorage.Members.FirstOrDefault(m => m.MemberId == memberId);
+            if (member != null) BookList.MemberStorage.Members.Remove(member);
+        }
+    }
+
+    public class MemberLocal
+    {
+        private string _memberId = string.Empty;
+
+        [Required(ErrorMessage = "Member ID ဖြည့်ရန် လိုအပ်ပါသည်။")]
+        [RegularExpression(@"^(STU|stu)-.+$", ErrorMessage = "ID သည် 'STU-' ဖြင့် စတင်ရပါမည်။")]
+        public string MemberId
+        {
+            get => _memberId;
+            set => _memberId = value?.ToUpper()?.Trim() ?? string.Empty;
+        }
+
+        [Required(ErrorMessage = "အမည်အပြည့်အစုံ ဖြည့်ရန် လိုအပ်ပါသည်။")]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email ဖြည့်ရန် လိုအပ်ပါသည်။")]
+        [EmailAddress(ErrorMessage = "မှန်ကန်သော Email ပုံစံ ဖြစ်ရပါမည်။")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "ဖုန်းနံပါတ် ဖြည့်ရန် လိုအပ်ပါသည်။")]
+        public string Phone { get; set; } = string.Empty;
+
+        public DateTime JoinDate { get; set; } = DateTime.Now;
+    }
+}

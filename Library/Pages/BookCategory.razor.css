@@ -1,0 +1,337 @@
+﻿/* ==========================================
+   🎯 ပင်မ ကွန်တိန်နာ (Main Container)
+   ========================================== */
+.category-container {
+    padding: 24px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    max-width: 1000px;
+    margin: 20px auto;
+}
+
+/* Header ပိုင်းအလှဆင်ခြင်း */
+.category-header h2 {
+    color: #1a202c;
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+/* ==========================================
+   🎯 ရှာဖွေရေးနှင့် Add ခလုတ်တန်း (Header Action)
+   ========================================== */
+.header-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 24px;
+}
+
+    /* Search Box စာရိုက်ကွင်း */
+    .header-action .search {
+        flex: 1;
+        max-width: 350px;
+        padding: 10px 16px;
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+        .header-action .search:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+        }
+
+    /* ပင်မ Add ခလုတ် */
+    .header-action .btn-add {
+        background-color: #3182ce;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        white-space: nowrap; /* စာသားကို တစ်ကြောင်းတည်း ဖြစ်စေရန် */
+    }
+
+        .header-action .btn-add:hover {
+            background-color: #2b6cb0;
+        }
+
+/* ==========================================
+   🎯 Table အတွက် Responsive Wrapper Container
+   ========================================== */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto; /* Screen သေးလျှင် Table မပြတ်ဘဲ Scroll ဆွဲကြည့်နိုင်ရန် */
+    -webkit-overflow-scrolling: touch;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+/* ==========================================
+   🎯 CUSTOM ZAYAR (Table Design)
+   ========================================== */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+    .custom-table th {
+        background-color: #f7fafc;
+        color: #4a5568;
+        padding: 14px 16px;
+        font-weight: 600;
+        border-bottom: 2px solid #e2e8f0;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .custom-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #edf2f7;
+        color: #2d3748;
+        font-size: 0.95rem;
+    }
+
+    /* Table Row လေးတွေကို တစ်ကြောင်းကျော် အရောင်မှိန်ချခြင်း */
+    .custom-table tbody tr:nth-child(even) {
+        background-color: #fcfcfc;
+    }
+
+    .custom-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+/* Action ခလုတ်များ စုစည်းရာ Box */
+.action-btns {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+/* Edit ခလုတ် (အဝါရောင်နု) */
+.btn-edit {
+    background-color: #ecc94b;
+    color: #744210;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+    .btn-edit:hover {
+        background-color: #d69e2e;
+    }
+
+/* Delete ခလုတ် (အနီရောင်) */
+.btn-delete {
+    background-color: #fed7d7;
+    color: #9b2c2c;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+    .btn-delete:hover {
+        background-color: #e53e3e;
+        color: white;
+    }
+
+.text-center {
+    text-align: center;
+}
+
+/* ==========================================
+   🎯 POP-UP MODAL BOX (အသစ်ထည့်/ပြင်ဆင်ရန် ပေါ့အပ်)
+   ========================================== */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 16px; /* ဖုန်းပေါ်တွင် Modal Box ဘေးမကပ်စေရန် */
+    box-sizing: border-box;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.bookAdd-container {
+    background-color: #ffffff;
+    padding: 28px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    animation: slideUp 0.25s ease-out;
+}
+
+    .bookAdd-container h3 {
+        margin: 0 0 6px 0;
+        color: #2d3748;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .bookAdd-container hr {
+        border: 0;
+        border-top: 1px solid #e2e8f0;
+        margin-bottom: 20px;
+    }
+
+/* Input ကွက်လပ်အဖွဲ့အစည်း */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+    .input-group label {
+        font-weight: 500;
+        color: #4a5568;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+    }
+
+    .input-group input[type="text"] {
+        padding: 10px 12px;
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        color: #2d3748;
+        transition: border-color 0.2s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+        .input-group input[type="text"]:focus {
+            outline: none;
+            border-color: #3182ce;
+        }
+
+/* Pop-up အောက်ခြေ ခလုတ်များ */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+    .modal-actions button {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    /* Save ခလုတ် (အစိမ်းရောင်) */
+    .modal-actions .btn-save {
+        background-color: #48bb78;
+        color: white;
+    }
+
+        .modal-actions .btn-save:hover {
+            background-color: #38a169;
+        }
+
+    /* Cancel ခလုတ် (မီးခိုးရောင်) */
+    .modal-actions .btn-cancel {
+        background-color: #edf2f7;
+        color: #4a5568;
+    }
+
+        .modal-actions .btn-cancel:hover {
+            background-color: #e2e8f0;
+        }
+
+/* ==========================================
+   ✨ ANIMATIONS
+   ========================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================
+   📱 MOBILE & TABLET RESPONSIVE MEDIA QUERIES
+   ========================================== */
+@media (max-width: 768px) {
+    .category-container {
+        padding: 16px;
+        margin: 10px;
+    }
+
+    /* Search Box နှင့် Button ကို အပေါ်အောက် တန်းစီပေးခြင်း */
+    .header-action {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+        .header-action .search {
+            max-width: 1000px; /* ဖုန်းပေါ်တွင် အပြည့်ဖြစ်စေရန် */
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .header-action .btn-add {
+            width: 100%;
+            text-align: center;
+        }
+
+    .bookAdd-container {
+        padding: 20px;
+    }
+
+    /* ဖုန်းပေါ်တွင် Pop-up ခလုတ်များကို အညီအမျှ ကျယ်စေရန် */
+    .modal-actions {
+        display: flex;
+    }
+
+        .modal-actions button {
+            flex: 1;
+            text-align: center;
+        }
+}

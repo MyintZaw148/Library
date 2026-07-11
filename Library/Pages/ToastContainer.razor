@@ -1,0 +1,72 @@
+﻿@inject ToastService ToastService
+@implements IDisposable
+
+<div class="toast-wrapper">
+    @foreach (var toast in ActiveToasts)
+    {
+        <div class="toast-card @toast.Type">
+            <div class="toast-icon">
+                @if (toast.Type == "success")
+                {
+                    <text>✅</text>
+                }
+                else if (toast.Type == "danger")
+                {
+
+                    <text>❌</text>
+                }
+                else
+                {
+
+                    <text>⚠️</text>
+                }
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">@toast.Title</span>
+                <span class="toast-message">@toast.Message</span>
+            </div>
+            <button class="toast-close" @onclick="() => RemoveToast(toast)">&times;</button>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ToastModel> ActiveToasts = new List<ToastModel>();
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += HandleToastShow;
+    }
+
+    private void HandleToastShow(string message, string title, string type)
+    {
+        var toast = new ToastModel { Message = message, Title = title, Type = type };
+        ActiveToasts.Add(toast);
+        InvokeAsync(StateHasChanged);
+
+        // 🎯 ၃ စက္ကန့်ပြည့်ရင် အလိုအလျောက် ပျောက်သွားစေရန်
+        Task.Delay(3000).ContinueWith(_ =>
+        {
+            ActiveToasts.Remove(toast);
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private void RemoveToast(ToastModel toast)
+    {
+        ActiveToasts.Remove(toast);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= HandleToastShow;
+    }
+
+    public class ToastModel
+    {
+        public string Message { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string Type { get; set; } = "";
+    }
+}

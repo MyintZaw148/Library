@@ -1,0 +1,312 @@
+﻿/* Container ၏ အနားသတ်များ */
+.book-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+/* Header ပိုင်းကို ဘယ်/ညာ ခွဲထုတ်ခြင်း (Flexbox သုံးထားသည်) */
+.book-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* ညာဘက်အကွက်က အောက်ဆင်းသွားရင် ခေါင်းစဉ်ပါ လိုက်မဆင်းအောင် အပေါ်မှာ ထိန်းထားတာပါ */
+    padding: 20px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+    .book-header h2 {
+        margin: 0;
+        color: #333;
+    }
+/* Button များ အလှဆင်ခြင်း */
+.btn-new-book {
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+    .btn-new-book:hover {
+        background-color: #0b5ed7;
+    }
+
+.header-actions {
+    display: flex;
+    flex-direction: column; /* Search က အပေါ်၊ Button က အောက် ရောက်အောင် ဒေါင်လိုက်စီမယ် */
+    align-items: flex-end; /* 👈 ဒါက အဓိကပါ။ အထဲက အရာအားလုံးကို ညာဘက်ထောင့်သို့ ကပ်ပေးပါတယ် */
+    gap: 10px; /* Search နဲ့ Button ကြား အကွာအဝေး */
+}
+
+.search {
+    width: 250px;
+    border: 2px solid #007bff;
+    border-radius: 25px;
+    padding: 8px 15px;
+    outline: none;
+}
+/* Alert Box ပြင်ဆင်ခြင်း */
+.alert-warning {
+    background-color: #fff3cd;
+    color: #664d03;
+    padding: 1rem;
+    border-radius: 4px;
+    text-align: center;
+    border: 1px solid #ffecb5;
+}
+.table-responsive {
+    width: 100%;
+    overflow-x: auto; /* Screen ကျဉ်းသွားလျှင် ညာဘက်သို့ Scroll ဆွဲကြည့်နိုင်ရန် */
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+}
+/* ဇယားကွက် (Table) တစ်ခုလုံးကို အလှဆင်ခြင်း */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse; /* ကပ်ကပ်ကြီး မဖြစ်အောင် ကူညီပေးသည် */
+    margin-top: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+    .custom-table thead {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .custom-table th,
+    .custom-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+    }
+    /* Mouse တင်လိုက်ရင် အရောင်ပြောင်းလဲမှု (Hover Effect) */
+    .custom-table tbody tr:hover {
+        background-color: #f1f3f5;
+    }
+
+.book-title {
+    font-weight: bold;
+    color: #0d6efd;
+}
+/* Status ပြသသည့် Badge များ */
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.badge-available {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.badge-borrowed {
+    background-color: #f8d7da;
+    color: #842029;
+}
+/* Action Buttons များကို ဘေးတိုက်ပြသခြင်း */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.text-center {
+    text-align: center !important;
+}
+/* Edit နှင့် Delete ခလုတ်များ */
+.btn-edit, .btn-delete {
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.btn-edit {
+    border: 1px solid #0dcaf0;
+    color: #0dcaf0;
+}
+
+    .btn-edit:hover {
+        background-color: #0dcaf0;
+        color: white;
+    }
+
+.btn-delete {
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+
+    .btn-delete:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-borrow:hover {
+        background-color: #2bc48a;
+        color: white;
+    }
+
+.btn-borrow, .btn-return {
+    width: 75px; 
+    text-align: center;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+    .btn-return:hover {
+        background-color: #e53e3e;
+        color: white;
+    }
+
+/* ==========================================
+   🎯 POPUP MODAL BACKGROUND (အမှောင်ချမည့်နောက်ခံ)
+   ========================================== */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.55); /* နောက်ခံကို မှန်ကြည်ရောင် အမည်း ၅၅% ချပစ်မည် */
+    backdrop-filter: blur(4px); /* ခေတ်မီအောင် နောက်ခံစာသားများကို ဝါး (Blur) ထားမည် */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* တခြားအရာအားလုံးရဲ့ အပေါ်ဆုံးမှာ ပေါ်နေစေရန် */
+    animation: fadeIn 0.25s ease-out; /* ပေါ်လာလျှင် ပျော့ပျော့ပြောင်းပြောင်း ပေါ်လာစေရန် */
+}
+
+/* ==========================================
+   🎯 POPUP CONTAINER BOX (အလယ်က အဖြူရောင်ဖောင်ကွက်)
+   ========================================== */
+.bookAdd-container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px; /* ထောင့်များကို လှလှပပ ဝိုင်းထားမည် */
+    width: 100%;
+    max-width: 480px; /* ဖောင်၏ အကျယ်ဆုံးပမာဏ */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25); /* အနောက်ဘက်တွင် အရိပ်ထည့်ခြင်း */
+    animation: slideDown 0.3s ease-out; /* အပေါ်မှ အောက်သို့ အိခနဲ ကျလာမည့် Animation */
+}
+
+    /* ခေါင်းစဉ်အပိုင်း အလှဆင်ခြင်း */
+    .bookAdd-container .book-header h3 {
+        margin: 0 0 8px 0;
+        color: #2d3748; /* စာလုံးအမည်းရောင်ရင့်ရင့် */
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .bookAdd-container hr {
+        border: 0;
+        border-top: 1px solid #e2e8f0;
+        margin-bottom: 20px;
+    }
+
+    /* ==========================================
+   🎯 INPUT FIELDS & LABELS (စာရိုက်ကွင်းများ)
+   ========================================== */
+    .bookAdd-container .input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 15px; /* ကွက်လပ်တစ်ခုချင်းစီကြား အကွာအဝေး */
+    }
+
+    .bookAdd-container label {
+        font-weight: 500;
+        color: #4a5568;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+    }
+
+    /* စာရိုက်ကွင်း Input ပုံစံများ */
+    .bookAdd-container input[type="text"] {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        color: #2d3748;
+        transition: all 0.2s ease-in-out;
+    }
+
+        /* စာရိုက်ကွင်းထဲ ကလစ်နှိပ်လိုက်ရင် အပြာရောင်အလင်းလေး လင်းလာစေရန် */
+        .bookAdd-container input[type="text"]:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+        }
+
+    /* ==========================================
+   🎯 BUTTONS ACTIONS (ခလုတ်များ အလှဆင်ခြင်း)
+   ========================================== */
+    .bookAdd-container .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px; /* ခလုတ်နှစ်ခုကြား အကွာအဝေး */
+        margin-top: 25px;
+    }
+
+    .bookAdd-container button {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    /* Add Book ခလုတ် (အစိမ်းရောင်) */
+    .bookAdd-container .btn-add {
+        background-color: #48bb78;
+        color: white;
+    }
+
+        .bookAdd-container .btn-add:hover {
+            background-color: #38a169;
+        }
+
+    /* Cancel ခလုတ် (မီးခိုးရောင်) */
+    .bookAdd-container .btn-cancel {
+        background-color: #edf2f7;
+        color: #4a5568;
+    }
+
+        .bookAdd-container .btn-cancel:hover {
+            background-color: #e2e8f0;
+        }
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px); /* အပေါ်မှ ၂၀ ပစ်ဇယ်ကနေ ကျလာမည် */
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

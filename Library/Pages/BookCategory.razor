@@ -1,0 +1,167 @@
+﻿@page "/category"
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject ToastService Toast
+
+<div class="category-container">
+    <div class="category-header">
+        <h2>Manage Category</h2>
+    </div>
+
+    <div class="header-action">
+        <input class="search" type="text" placeholder="Search By Name" @bind-value="searchText" @bind-value:event="oninput" />
+        <button class="btn-add" @onclick="openAddModel">Add</button>
+    </div>
+
+    @if (FilteredCategory == null || !FilteredCategory.Any())
+    {
+        <div class="alert-warning" style="padding: 20px; background-color: #fff3cd; color: #856404; border-radius: 5px; text-align: center; margin-top: 20px;">
+            အမျိုးအစားမရှိသေးပါ (သို့မဟုတ်) ရှာဖွေမှုမတွေ့ပါ။
+        </div>
+    }
+    else
+    {
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var cat in FilteredCategory)
+                {
+                    <tr>
+                        <td>@cat.Id</td>
+                        <td>@cat.CatName</td>
+                        <td style="text-align: center;">
+                            <div class="action-btns">
+                                <button class="btn-edit" @onclick="() => EditCategory(cat)">Edit</button>
+                                <button class="btn-delete" @onclick="() => DeleteCategory(cat.Id)">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (isOpenModel)
+    {
+        <div class="modal-backdrop">
+            <div class="bookAdd-container">
+                <div class="book-header">
+                    <h3>@(isEditModel ? "Edit Category" : "Add New Category")</h3>
+                    <hr />
+                </div>
+
+                <div class="input-group">
+                    <label>Category Name</label>
+                    <input type="text" placeholder="Enter CategoryName" @bind-value="newCategory.CatName" />
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-save" @onclick="SaveCategory">Save</button>
+                    <button class="btn-cancel" @onclick="CloseModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code
+{
+    private string searchText = string.Empty;
+    private bool isOpenModel = false;
+    private bool isEditModel = false;
+    private CategoryLocal newCategory = new CategoryLocal();
+
+    // 💡 ရှင်းလင်းချက် - BookList ဘက်က လှမ်းယူရလွယ်အောင် static List နာမည်ကို CategoryList ဟု အတည်ပြုပေးလိုက်သည်
+    public static List<CategoryLocal> CategoryList { get; set; } = new List<CategoryLocal>
+    {
+        new CategoryLocal{Id = 1, CatName = "History"},
+        new CategoryLocal{Id = 2, CatName = "LoveStory"},
+    };
+
+    private void openAddModel()
+    {
+        isEditModel = false;
+        newCategory = new CategoryLocal();
+        isOpenModel = true;
+    }
+
+    private void CloseModal() => isOpenModel = false;
+
+    private List<CategoryLocal> FilteredCategory
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                return CategoryList;
+            }
+            return CategoryList.Where(c => c.CatName.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+    }
+
+    private async Task SaveCategory()
+    {
+        if (string.IsNullOrWhiteSpace(newCategory.CatName))
+        {
+            Toast.ShowWarning("နာမည်ကို သေချာဖြည့်စွက်ပေးပါ", "Validation Required");
+            return;
+        }
+
+        bool isDuplicate = CategoryList.Any(c => c.CatName.Trim().Equals(newCategory.CatName.Trim(), StringComparison.OrdinalIgnoreCase)
+                                                                        && c.Id != newCategory.Id);
+        if (isDuplicate)
+        {
+            Toast.ShowWarning($"'{newCategory.CatName}' ဆိုသည့် အမျိုးအစားသည် စာရင်းထဲတွင် ရှိနှင့်ပြီးသား ဖြစ်နေပါသည်။", "Duplicate Category");
+            return;
+        }
+
+        if (!isEditModel)
+        {
+            int nextId = CategoryList.Any() ? CategoryList.Max(b => b.Id) + 1 : 1;
+            newCategory.Id = nextId;
+            CategoryList.Add(newCategory);
+        }
+        else
+        {
+            var existing = CategoryList.FirstOrDefault(c => c.Id == newCategory.Id);
+            if (existing != null)
+            {
+                existing.CatName = newCategory.CatName;
+            }
+        }
+        isOpenModel = false;
+    }
+
+    private void EditCategory(CategoryLocal category)
+    {
+        isEditModel = true;
+        newCategory = new CategoryLocal
+        {
+            Id = category.Id,
+            CatName = category.CatName
+        };
+        isOpenModel = true;
+    }
+
+    private void DeleteCategory(int id)
+    {
+        var target = CategoryList.FirstOrDefault(c => c.Id == id);
+        if (target != null)
+        {
+            CategoryList.Remove(target);
+        }
+    }
+
+    public class CategoryLocal
+    {
+        public int Id { get; set; }
+        public string CatName { get; set; } = string.Empty;
+    }
+}

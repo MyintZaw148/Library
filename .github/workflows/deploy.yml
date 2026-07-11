@@ -1,0 +1,50 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main   # main branch push တိုင်း auto-deploy
+
+  workflow_dispatch: # Manual trigger အတွက်
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Library/Library/Library.csproj
+
+      - name: Publish Blazor WASM
+        run: |
+          dotnet publish Library/Library/Library.csproj \
+            -c Release \
+            -o release \
+            --nologo
+
+      - name: Fix permissions
+        run: chmod -R 755 release/wwwroot
+
+      - name: Add .nojekyll file
+        run: touch release/wwwroot/.nojekyll
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: release/wwwroot
+          publish_branch: gh-pages
+          force_orphan: true
