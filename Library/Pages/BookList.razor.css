@@ -310,3 +310,154 @@
         transform: translateY(0);
     }
 }
+
+/* ==========================================
+   🎯 BOOK CARD GRID SYSTEM
+   ========================================== */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* မျက်နှာပြင်အလိုက် Card များကို အော်တိုစီပေးသည် */
+    gap: 24px;
+    margin-top: 2rem;
+}
+
+/* Card တစ်ခုချင်းစီ၏ Container */
+.book-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .book-card:hover {
+        transform: translateY(-4px); /* Mouse တင်လျှင် အပေါ်သို့ အနည်းငယ် ကြွတက်မည် */
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+/* Header အပိုင်း */
+.card-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.card-category {
+    background: #edf2f7;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4a5568;
+    text-transform: uppercase;
+}
+
+/* Body အပိုင်း */
+.card-body-content {
+    flex-grow: 1;
+    margin-bottom: 20px;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.card-author {
+    font-size: 0.95rem;
+    color: #718096;
+    margin: 0 0 12px 0;
+}
+
+.borrower-info {
+    background: #fff5f5;
+    border-left: 3px solid #e53e3e;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #c53030;
+    font-weight: 500;
+}
+
+/* Footer & Buttons အပိုင်း */
+.card-footer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px solid #edf2f7;
+    padding-top: 15px;
+}
+
+.quick-action-zone .btn-card-action {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.btn-borrow-card {
+    background-color: #38a169;
+    color: white;
+}
+
+    .btn-borrow-card:hover {
+        background-color: #2f855a;
+    }
+
+.btn-return-card {
+    background-color: #e53e3e;
+    color: white;
+}
+
+    .btn-return-card:hover {
+        background-color: #c53030;
+    }
+
+/* Edit / Delete Zone */
+.modify-zone {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-card-edit, .btn-card-delete {
+    flex: 1;
+    padding: 8px;
+    border-radius: 6px;
+    background: transparent;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.btn-card-edit {
+    border: 1px solid #3182ce;
+    color: #3182ce;
+}
+
+    .btn-card-edit:hover {
+        background: #3182ce;
+        color: white;
+    }
+
+.btn-card-delete {
+    border: 1px solid #e53e3e;
+    color: #e53e3e;
+}
+
+    .btn-card-delete:hover {
+        background: #e53e3e;
+        color: white;
+    }

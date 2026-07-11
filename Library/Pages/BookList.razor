@@ -21,71 +21,57 @@
     }
     else
     {
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Author</th>
-                        <th>Category</th>
-                        <th>ISBN</th>
-                        <th>Year</th>
-                        <th>Status</th>
-                        <th>Quick Action</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var book in FilteredBooks)
-                    {
-                        <tr>
-                            <td>@book.Id</td>
-                            <td class="book-title">@book.Title</td>
-                            <td>@book.Author</td>
-                            <td>
-                                <span style="background: #edf2f7; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: 500;">
-                                    @(string.IsNullOrEmpty(book.CategoryName) ? "Uncategorized" : book.CategoryName)
-                                </span>
-                            </td>
-                            <td>@book.ISBN</td>
-                            <td>@book.PublishYear</td>
-                            <td>
-                                <span class="badge @(book.IsAvailable ? "badge-available" : "badge-borrowed")">
-                                    @(book.IsAvailable ? "Available" : "Borrowed")
-                                </span>
+        <div class="book-grid">
+            @foreach (var book in FilteredBooks)
+            {
+                <div class="book-card">
+                    <div class="card-header-top">
+                        <span class="card-category">
+                            @(string.IsNullOrEmpty(book.CategoryName) ? "Uncategorized" : book.CategoryName)
+                        </span>
+                        <span class="badge @(book.IsAvailable ? "badge-available" : "badge-borrowed")">
+                            @(book.IsAvailable ? "Available" : "Borrowed")
+                        </span>
+                    </div>
 
-                                @if (!book.IsAvailable && !string.IsNullOrEmpty(book.BorrowedByMemberId))
-                                {
-                                    <div style="font-size: 0.75rem; color: #dc3545; margin-top: 4px; font-weight: 500;">
-                                        ID: @book.BorrowedByMemberId
-                                    </div>
-                                }
-                            </td>
+                    <div class="card-body-content">
+                        <h3 class="card-title">📖 @book.Title</h3>
+                        <p class="card-author">By <b>@book.Author</b></p>
 
-                            <td>
-                                @if (book.IsAvailable)
-                                {
-                                    <button class="btn-borrow" @onclick="() => ToggleBookStatus(book.Id)">Borrow</button>
-                                }
-                                else
-                                {
-                                    <button class="btn-return" @onclick="() => ToggleBookStatus(book.Id)">Return</button>
-                                }
-                            </td>
+                        @if (!book.IsAvailable && !string.IsNullOrEmpty(book.BorrowedByMemberId))
+                        {
+                            <div class="borrower-info">
+                                👤 Borrower ID: <span>@book.BorrowedByMemberId</span>
+                            </div>
+                        }
+                    </div>
 
-                            <td class="text-center">
-                                <div class="action-buttons">
-                                    <button class="btn-edit" @onclick="() => OpenEditModal(book)">Edit</button>
-                                    <button class="btn-delete" @onclick="() => DeleteBook(book.Id)">Delete</button>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                    <div class="card-footer-actions">
+                        <div class="quick-action-zone">
+                            @if (book.IsAvailable)
+                            {
+                                <button class="btn-card-action btn-borrow-card" @onclick="() => ToggleBookStatus(book.Id)">
+                                    📥 Borrow
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn-card-action btn-return-card" @onclick="() => ToggleBookStatus(book.Id)">
+                                    ↩️ Return
+                                </button>
+                            }
+                        </div>
+
+                        <div class="modify-zone">
+                            <button class="btn-card-edit" @onclick="() => OpenEditModal(book)">Edit</button>
+                            <button class="btn-card-delete" @onclick="() => DeleteBook(book.Id)">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     }
+
 
     @if (isModelOpen)
     {
